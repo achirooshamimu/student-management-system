@@ -1,65 +1,397 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from "react";
 
 export default function Home() {
+  const [students, setStudents] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    dob: "",
+    country: "",
+    contact: "",
+    gender: "",
+    email: "",
+    course: "",
+    year: "",
+    institution: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleAddStudent = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const newStudent = {
+      id: Date.now(), // Fixed: Uses timestamp to prevent duplicate IDs if items are deleted later
+      ...formData,
+    };
+    
+    setStudents([...students, newStudent]);
+    setFormData({
+      name: "",
+      dob: "",
+      country: "",
+      contact: "",
+      gender: "",
+      email: "",
+      course: "",
+      year: "",
+      institution: "",
+    });
+  };
+
+  // Fixed: Corrected try-catch block structure and scoped parsedStudents correctly
+  useEffect(() => {
+    const savedStudents = localStorage.getItem("students");
+    if (savedStudents) {
+      try {
+        const parsedStudents = JSON.parse(savedStudents);
+        if (Array.isArray(parsedStudents)) {
+          setStudents(parsedStudents);
+        }
+      } catch (error) {
+        console.error("Failed to parse students from localStorage", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (students.length > 0) {
+      localStorage.setItem("students", JSON.stringify(students));
+    }
+  }, [students]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="container" style={{ padding: "20px", fontFamily: "sans-serif" }}>
+      <h1>Student Management System</h1>
+      
+      <div className="Card" style={{ marginBottom: "20px" }}>
+        <h2>Dashboard</h2>
+        <p>Total Students: {students.length}</p>
+      </div>
+
+      {/* Fixed: Adjusted maxWidth from 60px to 600px so fields display properly */}
+      <form onSubmit={handleAddStudent} style={{ display: "grid", gap: "10px", gridTemplateColumns: "1fr 1fr", marginBottom: "30px", maxWidth: "600px" }}>
+        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required />
+        <input type="date" name="dob" value={formData.dob} onChange={handleChange} required />
+        <input type="text" name="country" placeholder="Country" value={formData.country} onChange={handleChange} required />
+        <input type="text" name="contact" placeholder="Contact" value={formData.contact} onChange={handleChange} required />
+        
+        <select name="gender" value={formData.gender} onChange={handleChange} required>
+          <option value="">Select Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+        <input type="text" name="course" placeholder="Course" value={formData.course} onChange={handleChange} required />
+        <input type="text" name="year" placeholder="Year" value={formData.year} onChange={handleChange} required />
+        <input type="text" name="institution" placeholder="Institution" value={formData.institution} onChange={handleChange} required />
+        
+        <button type="submit" style={{ gridColumn: "span 2", padding: "10px", cursor: "pointer" }}>Save Student</button>
+      </form>
+
+      <table border={1} cellPadding={10} style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ backgroundColor: "#2563eb", color: "white" }}>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Country</th>
+            <th>Contact</th>
+            <th>Email</th>
+            <th>Date of Birth</th>
+            <th>Course</th>
+            <th>Year</th>
+            <th>Institution</th>
+          </tr>
+        </thead>
+        <tbody>
+          {students.length === 0 ? (
+            <tr>
+              <td colSpan={10} style={{ textAlign: "center" }}>No students added yet</td>
+            </tr>
+          ) : (
+            students.map((student: any) => (
+              <tr key={student.id}>
+                <td>{student.id}</td>
+                <td>{student.name}</td>
+                <td>{student.gender}</td>
+                <td>{student.country}</td>
+                <td>{student.contact}</td>
+                <td>{student.email}</td>
+                <td>{student.dob}</td>
+                <td>{student.course}</td>
+                <td>{student.year}</td>
+                <td>{student.institution}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// "use client";
+// import { useState, useEffect } from "react";
+
+// export default function Home() {
+//   const [students, setStudents] = useState<any[]>([]);
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     dob: "",
+//     country: "",
+//     contact: "",
+//     gender: "",
+//     email: "",
+//     course: "",
+//     year: "",
+//     institution: "",
+//   });
+//   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+//     setFormData({
+//       ...formData,
+//       [e.target.name]: e.target.value,
+//     });
+//   };
+//   const handleAddStudent = (e: React.FormEvent) => {
+//     e.preventDefault();
+    
+  
+//     const newStudent = {
+//       id: students.length + 1, 
+//       ...formData,
+//     };
+//     setStudents([...students, newStudent]);
+//     setFormData({
+//       name: "",
+//       dob: "",
+//       country: "",
+//       contact: "",
+//       gender: "",
+//       email: "",
+//       course: "",
+//       year: "",
+//       institution: "",
+//     });
+//   };
+//   useEffect(()=>{
+//     const savedStudents= localStorage.getItem("students");
+//     if(savedStudents){
+//       try{
+//         const parsedStudents= JSON.parse(savedStudents)
+//       }
+//   if(Array.isArray(parsedStudents)){
+//         setStudents(parsedStudents);
+//       }
+        
+//       }catch(error){
+//         console.error("Failed to parse students from localStorage", error);
+//       }
+//     }
+//   },[]);
+// useEffect(() => {
+//     if (students.length > 0) {
+//       localStorage.setItem("students", JSON.stringify(students));
+//     }
+//   }, [students]);
+
+//   return (
+//     <div className="container" style={{ padding: "20px", fontFamily: "sans-serif" }}>
+//       <h1>Student Management System</h1>
+//       <div className="Card" style={{ marginBottom: "20px" }}>
+//         <h2>Dashboard</h2>
+//         <p>Total Students: {students.length}</p>
+//       </div>
+
+  
+//       <form onSubmit={handleAddStudent} style={{ display: "grid", gap: "10px", gridTemplateColumns: "1fr 1fr", marginBottom: "30px", maxWidth: "60px" }}>
+//         <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} required />
+//         <input type="date" name="dob" value={formData.dob} onChange={handleChange} required />
+//         <input type="text" name="country" placeholder="Country" value={formData.country} onChange={handleChange} required />
+//         <input type="text" name="contact" placeholder="Contact" value={formData.contact} onChange={handleChange} required />
+        
+//         <select name="gender" value={formData.gender} onChange={handleChange} required>
+//           <option value="">Select Gender</option>
+//           <option value="Male">Male</option>
+//           <option value="Female">Female</option>
+//           <option value="Other">Other</option>
+//         </select>
+
+//         <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+//         <input type="text" name="course" placeholder="Course" value={formData.course} onChange={handleChange} required />
+//         <input type="text" name="year" placeholder="Year" value={formData.year} onChange={handleChange} required />
+//         <input type="text" name="institution" placeholder="Institution" value={formData.institution} onChange={handleChange} required />
+        
+//         <button type="submit" style={{ gridColumn: "span 2", padding: "10px", cursor: "pointer" }}>Save Student</button>
+//       </form>
+
+  
+//       <table border={1} cellPadding={10} style={{ width: "100%", borderCollapse: "collapse" }}>
+//         <thead>
+//           <tr style={{ backgroundColor: "#2563eb", color: "white" }}>
+//             <th>ID</th>
+//             <th>Name</th>
+//             <th>Gender</th>
+//            <th>Country</th>
+//             <th>Contact</th>
+//             <th>Email</th>
+//              <th>Date of Birth</th>
+//             <th>Course</th>
+//             <th>Year</th>
+//             <th>Institution</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {students.length === 0 ? (
+//             <tr>
+//               <td colSpan={10} style={{ textAlign: "center" }}>No students added yet</td>
+//             </tr>
+//           ) : (
+//             students.map((student: any) => (
+//               <tr key={student.id}>
+//                 <td>{student.id}</td>
+//                 <td>{student.name}</td>
+//                  <td>{student.gender}</td>
+               
+//                 <td>{student.country}</td>
+//                 <td>{student.contact}</td>
+               
+//                 <td>{student.email}</td>
+//                  <td>{student.dob}</td>
+//                 <td>{student.course}</td>
+//                 <td>{student.year}</td>
+//                 <td>{student.institution}</td>
+//               </tr>
+//             ))
+//           )}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
